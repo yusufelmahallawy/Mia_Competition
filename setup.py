@@ -23,7 +23,8 @@ setup(
         ],
     },
     entry_points={
-        'console_scripts': [
-        ],
-    },
+    'console_scripts': [
+        'vision_node = piston_cup.vision_node:main',
+    ],
+  },
 )
