@@ -55,7 +55,7 @@ class PilotInterface:
         cv2.waitKey(1)
 
     def run(self):
-        print("جاري تشغيل واجهة التحكم... استخدم أزرار W, A, S,D للحركة و المسافة للوقوف. اضغط Ctrl+C للخروج.")
+        print("Starting the control interface... Use the W, A, S, and D keys to move and the Space bar to stop. Press Ctrl+C to exit.")
         x = 0.0
         th = 0.0
 
