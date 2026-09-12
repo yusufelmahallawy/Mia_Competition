@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<robot name="piston_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============ Chassis ============ -->
+  <link name="base_link">
+    <visual>
+      <geometry><box size="0.22 0.18 0.08"/></geometry>
+      <material name="grey"><color rgba="0.3 0.3 0.3 1"/></material>
+    </visual>
+    <collision>
+      <geometry><box size="0.22 0.18 0.08"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.003" iyy="0.005" izz="0.006" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+  </link>
+
+  <!-- ============ Wheels (4x) ============ -->
+  <xacro:macro name="wheel" params="name x y">
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+        <geometry><cylinder radius="0.04" length="0.03"/></geometry>
+        <material name="black"><color rgba="0.05 0.05 0.05 1"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+        <geometry><cylinder radius="0.04" length="0.03"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.08"/>
+        <inertia ixx="0.00003" iyy="0.00003" izz="0.00005" ixy="0" ixz="0" iyz="0"/>
+      </inertial>
+    </link>
+    <joint name="${name}_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${name}_link"/>
+      <origin xyz="${x} ${y} -0.02" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:wheel name="wheel_fl" x="0.08"  y="0.11"/>
+  <xacro:wheel name="wheel_fr" x="0.08"  y="-0.11"/>
+  <xacro:wheel name="wheel_rl" x="-0.08" y="0.11"/>
+  <xacro:wheel name="wheel_rr" x="-0.08" y="-0.11"/>
+
+  <!-- ============ Mono camera ============ -->
+  <link name="mono_camera_link">
+    <visual>
+      <geometry><box size="0.02 0.03 0.02"/></geometry>
+      <material name="cam_black"><color rgba="0 0 0 1"/></material>
+    </visual>
+    <inertial><mass value="0.01"/><inertia ixx="1e-6" iyy="1e-6" izz="1e-6" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <joint name="mono_camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="mono_camera_link"/>
+    <origin xyz="0.11 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============ Ultrasonic sensor ============ -->
+  <link name="ultrasonic_link">
+    <visual>
+      <geometry><box size="0.02 0.02 0.02"/></geometry>
+      <material name="us_grey"><color rgba="0.6 0.6 0.6 1"/></material>
+    </visual>
+    <inertial><mass value="0.01"/><inertia ixx="1e-6" iyy="1e-6" izz="1e-6" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <joint name="ultrasonic_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic_link"/>
+    <origin xyz="0.11 0 -0.01" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============ Gazebo sensors ============ -->
+  <gazebo reference="mono_camera_link">
+    <sensor type="camera" name="mono_camera">
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.047</horizontal_fov>
+        <image><width>640</width><height>480</height><format>R8G8B8</format></image>
+        <clip><near>0.05</near><far>15</far></clip>
+      </camera>
+      <topic>/mono/image</topic>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ultrasonic_link">
+    <sensor type="gpu_lidar" name="ultrasonic_sensor">
+      <update_rate>15</update_rate>
+      <lidar>
+        <scan>
+          <horizontal><samples>1</samples><min_angle>0</min_angle><max_angle>0</max_angle></horizontal>
+          <vertical><samples>1</samples><min_angle>0</min_angle><max_angle>0</max_angle></vertical>
+        </scan>
+        <range><min>0.02</min><max>4.0</max><resolution>0.01</resolution></range>
+      </lidar>
+      <topic>/ultrasonic_scan</topic>
+      <always_on>true</always_on>
+    </sensor>
+  </gazebo>
+
+  <!-- ============ Movement + odometry plugins ============ -->
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>wheel_fl_joint</left_joint>
+      <left_joint>wheel_rl_joint</left_joint>
+      <right_joint>wheel_fr_joint</right_joint>
+      <right_joint>wheel_rr_joint</right_joint>
+      <wheel_separation>0.22</wheel_separation>
+      <wheel_radius>0.04</wheel_radius>
+      <odom_publish_frequency>20</odom_publish_frequency>
+      <topic>cmd_vel</topic>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher"></plugin>
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+</robot>

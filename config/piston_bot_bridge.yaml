@@ -1,0 +1,27 @@
+# ros_gz_bridge parameter bridge config
+# run with:
+#   ros2 run ros_gz_bridge parameter_bridge --ros-args -p config_file:=piston_bot_bridge.yaml
+
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/model/piston_bot/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/mono/image"
+  gz_topic_name: "/mono/image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/ultrasonic_scan"
+  gz_topic_name: "/ultrasonic_scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/odom"
+  gz_topic_name: "/model/piston_bot/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
