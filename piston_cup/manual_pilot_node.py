@@ -12,7 +12,7 @@ class ManualPilotNode(Node):
         # Integration Node will receive this
         self.cmd_pub = self.create_publisher(
             Twist,
-            '/cmd_vel',
+            '/manual_cmd_vel',
             10
         )
 
@@ -27,6 +27,8 @@ class ManualPilotNode(Node):
         print("S: Backward")
         print("A: Strafe Left")
         print("D: Strafe Right")
+        print("E: Rotate Right")
+        print("Q: Rotate Left")
         print("Ctrl+C: Exit")
 
     def on_press(self, key):
@@ -41,6 +43,10 @@ class ManualPilotNode(Node):
                 msg.linear.y = 0.5
             elif key.char == 'd':
                 msg.linear.y = -0.5
+            elif key.char == 'e':
+                msg.angular.z = 0.5
+            elif key.char == 'q':
+                msg.angular.z = -0.5                    
             else:
                 return
 
@@ -53,8 +59,8 @@ class ManualPilotNode(Node):
         msg = Twist()
 
         try:
-            if key.char in ['w', 's', 'a', 'd']:
-                print("--STOP")
+            if key.char in ['w', 's', 'a', 'd' , 'e' ,'q']:
+                print("   STOP")
                 self.cmd_pub.publish(msg)
         except AttributeError:
             pass    
@@ -87,6 +93,11 @@ if __name__ == '__main__':
 
 
 
-    #source /opt/ros/jazzy/setup.bash
-    #ros2 run ros_gz_bridge parameter_bridge \
-    #/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist
+
+
+#source /opt/ros/jazzy/setup.bash
+#ros2 run ros_gz_bridge parameter_bridge \
+#/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist
+
+
+#gz sim worlds/mecanum_test.world

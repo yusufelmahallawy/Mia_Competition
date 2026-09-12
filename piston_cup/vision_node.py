@@ -25,13 +25,7 @@ class VisionNode(Node):
         # ------------------------------------------------------------
         # Load YOLO model
         # ------------------------------------------------------------
-        model_path = os.path.join(
-            get_package_share_directory('piston_cup'),
-            'models',
-            'best.pt'
-        )
-
-        self.model = YOLO(model_path)
+        self.model = YOLO('/home/piston_cup_ws/src/piston_cup/models/best.pt')
 
         # ------------------------------------------------------------
         # ROS Image <-> OpenCV
