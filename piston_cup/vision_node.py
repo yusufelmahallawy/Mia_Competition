@@ -6,14 +6,21 @@ from cv_bridge import CvBridge
 
 from ultralytics import YOLO
 
+from ament_index_python.packages import get_package_share_directory
+
+import os
+
 
 class VisionNode(Node):
 
     def __init__(self):
+        model_path = os.path.join(
+            get_package_share_directory('piston_cup'),
+            'models',
+            'best.pt'
+        )
+        self.model = YOLO(model_path)
         super().__init__('vision_node')
-
-        # Load trained YOLO model
-        self.model = YOLO('/home/aya/Mia_Competition/best.pt')
 
         # Convert ROS Image <-> OpenCV image
         self.bridge = CvBridge()
