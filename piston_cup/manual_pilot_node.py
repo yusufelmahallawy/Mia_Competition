@@ -1,148 +1,63 @@
-#!/usr/bin/env python3
-
-import sys
-import select
-import termios
-import tty
-
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
+from pynput import keyboard
 
 
 class ManualPilotNode(Node):
 
     def __init__(self):
-        super().__init__("manual_pilot_node")
+        super().__init__('manual_pilot_node')
 
-        # Publish to a separate topic.
-        # Integration Node will forward this to /cmd_vel
-        # when MANUAL mode is active.
+        # Integration Node will receive this
         self.cmd_pub = self.create_publisher(
             Twist,
-            "/manual_cmd_vel",
+            '/cmd_vel',
             10
         )
 
-        self.linear_speed = 0.20
-        self.angular_speed = 0.60
-
-        self.get_logger().info(
-            "Manual Pilot Node started"
+        self.listener = keyboard.Listener(
+            on_press=self.on_press,
+            on_release=self.on_release
         )
-        self.get_logger().info(
-            "Publishing on /manual_cmd_vel"
-        )
+        self.listener.start()
 
-    def publish_twist(
-        self,
-        linear_x=0.0,
-        linear_y=0.0,
-        angular_z=0.0
-    ):
+        print("Manual Pilot started!")
+        print("W: Forward")
+        print("S: Backward")
+        print("A: Strafe Left")
+        print("D: Strafe Right")
+        print("Ctrl+C: Exit")
+
+    def on_press(self, key):
         msg = Twist()
 
-        msg.linear.x = linear_x
-        msg.linear.y = linear_y
-        msg.angular.z = angular_z
+        try:
+            if key.char == 'w':
+                msg.linear.x = 0.5
+            elif key.char == 's':
+                msg.linear.x = -0.5
+            elif key.char == 'a':
+                msg.linear.y = 0.5
+            elif key.char == 'd':
+                msg.linear.y = -0.5
+            else:
+                return
 
-        self.cmd_pub.publish(msg)
+            self.cmd_pub.publish(msg)
 
-    def stop(self):
-        self.publish_twist(0.0, 0.0, 0.0)
+        except AttributeError:
+            pass
 
-    def get_key(self):
-        tty.setraw(sys.stdin.fileno())
-
-        key = sys.stdin.read(1)
-
-        termios.tcsetattr(
-            sys.stdin,
-            termios.TCSADRAIN,
-            self.settings
-        )
-
-        return key
-
-    def run(self):
-
-        self.settings = termios.tcgetattr(sys.stdin)
+    def on_release(self, key):
+        msg = Twist()
 
         try:
-            while rclpy.ok():
-
-                if select.select(
-                    [sys.stdin],
-                    [],
-                    [],
-                    0.05
-                )[0]:
-
-                    key = self.get_key()
-
-                    # Forward
-                    if key.lower() == "w":
-                        self.publish_twist(
-                            linear_x=self.linear_speed
-                        )
-
-                    # Backward
-                    elif key.lower() == "s":
-                        self.publish_twist(
-                            linear_x=-self.linear_speed
-                        )
-
-                    # Strafe left
-                    elif key.lower() == "a":
-                        self.publish_twist(
-                            linear_y=self.linear_speed
-                        )
-
-                    # Strafe right
-                    elif key.lower() == "d":
-                        self.publish_twist(
-                            linear_y=-self.linear_speed
-                        )
-
-                    # Rotate left
-                    elif key.lower() == "q":
-                        self.publish_twist(
-                            angular_z=self.angular_speed
-                        )
-
-                    # Rotate right
-                    elif key.lower() == "e":
-                        self.publish_twist(
-                            angular_z=-self.angular_speed
-                        )
-
-                    # Stop
-                    elif key == " ":
-                        self.stop()
-
-                    # Exit
-                    elif key.lower() == "x":
-                        self.stop()
-                        break
-
-                rclpy.spin_once(
-                    self,
-                    timeout_sec=0.01
-                )
-
-        finally:
-            self.stop()
-
-            termios.tcsetattr(
-                sys.stdin,
-                termios.TCSADRAIN,
-                self.settings
-            )
-
-    def destroy_node(self):
-        self.stop()
-        super().destroy_node()
-
+            if key.char in ['w', 's', 'a', 'd']:
+                print("--STOP")
+                self.cmd_pub.publish(msg)
+        except AttributeError:
+            pass    
 
 def main(args=None):
 
@@ -151,16 +66,27 @@ def main(args=None):
     node = ManualPilotNode()
 
     try:
-        node.run()
+        rclpy.spin(node)
 
     except KeyboardInterrupt:
-        pass
+        print("\nShutting down...")
 
     finally:
-        node.stop()
+        # Stop robot before shutdown
+        stop_msg = Twist()
+        node.cmd_pub.publish(stop_msg)
+
+        node.listener.stop()
         node.destroy_node()
         rclpy.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
+
+
+
+
+    #source /opt/ros/jazzy/setup.bash
+    #ros2 run ros_gz_bridge parameter_bridge \
+    #/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist

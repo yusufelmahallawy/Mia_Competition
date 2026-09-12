@@ -23,8 +23,12 @@ setup(
         ],
     },
     entry_points={
-    'console_scripts': [
-        'vision_node = piston_cup.vision_node:main',
-    ],
-  },
+        'console_scripts': [
+         'manual_pilot_node = piston_cup.manual_pilot_node:main',
+         'autonomous_motion_node = piston_cup.autonomous_motion_node:main',
+         'vision_node = piston_cup.vision_node:main',
+         'integration_node = piston_cup.integration_node:main',
+
+        ],
+     },
 )

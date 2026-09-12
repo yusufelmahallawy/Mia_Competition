@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.9">
+
+  <world name="mecanum_test_world">
+
+    <physics name="1ms" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Ground -->
+    <model name="ground">
+
+      <static>true</static>
+
+      <link name="ground_link">
+
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>10 10</size>
+            </plane>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>10 10</size>
+            </plane>
+          </geometry>
+        </visual>
+
+      </link>
+
+    </model>
+
+
+    <!-- Light -->
+    <light
+      name="sun"
+      type="directional">
+
+      <pose>0 0 5 0 0 0</pose>
+
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+
+      <direction>-0.5 0.5 -1</direction>
+
+    </light>
+
+
+    <!-- Mecanum Robot -->
+    <include>
+
+      <uri>model://mecanum_robot</uri>
+
+      <name>mecanum_robot</name>
+
+      <pose>0 0 0 0 0 0</pose>
+
+    </include>
+
+  </world>
+
+</sdf>
