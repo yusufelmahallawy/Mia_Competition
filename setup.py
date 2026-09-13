@@ -17,7 +17,7 @@ setup(
     ),
     (
         'share/' + package_name + '/models',
-        ['models/best.pt']
+        ['models/final_final.pt']
     ),
 ],
     install_requires=['setuptools'],
